@@ -1,0 +1,47 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Device is already configured"
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "api_token": "API Token"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {   
+        "title": "Options",
+        "description": "Select which options to amend.",   
+        "menu_options": {
+            "select_devices": "Select Devices",
+            "register_webhook": "Enable Webhook"
+        }
+      },
+      "select_devices": {
+        "title": "Select Devices",
+        "description": "Select the devices you want to add to Home Assistant.",
+        "data": {
+          "deviceId": "Unique ID of the device",
+          "deviceName": "Name of the device"
+        }
+      },
+      "register_webhook": {
+        "title": "Register Webhook",
+        "description": "Enable webhook to receive real-time updates from Olarm.\n\nTo finish setting up the integration, you need to tell the Olarm to send data to Home Assistant at the following address:\n\n- Server IP / Host Name: `{server}`\n- Path: `{path}`\n- Port: `{port}`\n\n",
+        "data": {
+          "webhook_enabled": "Enable Webhook",
+          "webhook_secret": "Webhook Secret"
+        }
+      }
+      }
+    }
+  }

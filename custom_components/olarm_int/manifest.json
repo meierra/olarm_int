@@ -1,0 +1,17 @@
+{
+  "domain": "olarm_int",
+  "name": "Olarm Integration",
+  "codeowners": [
+    "@meierra"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.home-assistant.io/integrations/olarm_int",
+  "homekit": {},
+  "iot_class": "cloud_polling",
+  "quality_scale": "bronze",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "version": "0.0.1"
+}
