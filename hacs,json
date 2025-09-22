@@ -1,6 +1,4 @@
 {
     "version": "0.1",
-    "name": "Olarm Integration",
-    "content_in_root": false,
-    "country": ["ZA"]
+    "name": "Olarm Integration"
 }
