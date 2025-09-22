@@ -6,11 +6,11 @@
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://www.home-assistant.io/integrations/olarm_int",
+  "documentation": "https://github.com/meierra/olarm_int/blob/master/read.me",
   "homekit": {},
   "iot_class": "cloud_polling",
   "quality_scale": "bronze",
-  "requirements": [],
+  "requirements": ["aiohttp"],
   "ssdp": [],
   "zeroconf": [],
   "version": "0.0.1"
