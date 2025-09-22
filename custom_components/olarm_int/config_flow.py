@@ -125,11 +125,11 @@ class OptionsFlowHandler(OptionsFlow):
             return self.async_create_entry(title="", data=option_data)
 
         data_schema = vol.Schema(
-            {vol.Optional(OlarmConf(**device).id, default=option_data.get( OlarmConf(**device).id ,False)): selector({"boolean" : {}}) for device in config_data["devices"]}
+            {vol.Optional(OlarmConf(**device).id, default=option_data.get( OlarmConf(**device).id ,False)): selector({"boolean" : {}}) for device in config_data["devices"].values()}
         )
 
         ### Define the data_description for more user friendly names
-        data_description = { OlarmConf(**device).id : OlarmConf(**device).label for device in config_data["devices"]}
+        data_description = { OlarmConf(**device).id : OlarmConf(**device).label for device in config_data["devices"].values()}
         _LOGGER.info("Data Descriptions: %s", data_description)
 
         return self.async_show_form(step_id="select_devices", data_schema=data_schema, description_placeholders=data_description)

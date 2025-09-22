@@ -99,7 +99,7 @@ class OlarmCoordinator(DataUpdateCoordinator):
             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
         )
 
-        self.devices_to_track = [device["id"] for device in config_entry.data["devices"] if config_entry.options.get(device["id"], False)]
+        self.devices_to_track = [device["id"] for device in config_entry.data["devices"].values() if config_entry.options.get(device["id"], False)]
 
         # Initialise DataUpdateCoordinator
         super().__init__(
