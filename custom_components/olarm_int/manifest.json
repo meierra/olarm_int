@@ -7,6 +7,7 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/meierra/olarm_int/blob/master/read.me",
+  "issue_tracker": "https://github.com/meierra/olarm_int/issues",
   "homekit": {},
   "iot_class": "cloud_polling",
   "quality_scale": "bronze",
