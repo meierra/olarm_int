@@ -155,7 +155,7 @@ class OlarmConf:
 
 ### Constants for the API ###
 BASE_URL: Final = "https://apiv4.olarm.co/api/v4/"
-DEFAULT_SCAN_INTERVAL = 30  # in seconds
+DEFAULT_SCAN_INTERVAL = 15  # in seconds
 OLARM_DIGEST_ALG: Final = 'sha1'
 OLARM_DIGEST_HEADER: Final = "x-olarm-signature"
 
