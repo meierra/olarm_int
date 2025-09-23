@@ -26,9 +26,11 @@ This is a early, work-in-progess build of the integration and has a base impleme
 
 ### One
 There are different status' for different Alarm devices and mapping needs to be done beteween the status from Olarm and the status in Home Assistant this is currently done for my alarm type via a dictionary mapping in Python:
+```
 action_map = {"ids_x64" : {ActionId.ZONE_UNBYPASS: ActionId.ZONE_BYPASS,
                            ActionId.AREA_STAY: ActionId.AREA_STAY,
                            ActionId.AREA_SLEEP: ActionId.AREA_STAY_2}}
+```
 
 The code will look through this dictionary and set status, or activate status based on this mappting, before falling backk to a default, this means that the functionality works for people with the same Alarm system as me, as I get feedback it should be easy to expand this out for new device types.
 
