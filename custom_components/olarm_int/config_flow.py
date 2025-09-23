@@ -52,7 +52,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     return {"title": f"Integration - Olarm ({api_data['userId']})", "devices": device_data}
 
 
-class ConfigFlow(ConfigFlow, domain=DOMAIN):
+class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Olarm Integration."""
 
     VERSION = 1
