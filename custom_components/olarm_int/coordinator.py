@@ -145,12 +145,6 @@ class OlarmCoordinator(DataUpdateCoordinator):
         # What is returned here is stored in self.data by the DataUpdateCoordinator
         return OlarmAPIData(self.api.controller_name, olarm_conf_data, olarm_state_data)
 
-    # async def get_entity_configuration(self, olarm_devices = list[OlarmDevice]) -> list[OlarmConf]:
-    #     """Return the entity configuration for the devices."""
-    #     # Return a list of entity configuration data
-    #     _LOGGER.debug("coordinator - create olarm configuration entries")
-    #     return await get_entity_configuration(olarm_devices)
-
     async def get_olarm_state_data(self, olarm_devices = dict[str,OlarmDevice]) -> list[OlarmState]:
         # Return a list of entity configuration data
         _LOGGER.debug("coordinator - create olarm state entries")
