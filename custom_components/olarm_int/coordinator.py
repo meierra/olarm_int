@@ -99,7 +99,7 @@ class OlarmCoordinator(DataUpdateCoordinator):
             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
         )
 
-        self.devices_to_track = [device["id"] for device in config_entry.data["devices"].values() if config_entry.options.get(device["id"], False)]
+        self.devices_to_track = [device for device in config_entry.data["devices"].keys() if config_entry.options.get(device, False)]
 
         # Initialise DataUpdateCoordinator
         super().__init__(
@@ -125,7 +125,12 @@ class OlarmCoordinator(DataUpdateCoordinator):
         """
         _LOGGER.debug("coordinator - Update data")
         try:
-            device_data = [await self.api.get_device(device) for device in self.devices_to_track]
+            if len(self.devices_to_track) == 0:
+                # call api to at least confirm connection
+                await self.api.get_all_devices()
+                device_data = []
+            else:
+                device_data = [await self.api.get_device(device) for device in self.devices_to_track]
         except APIAuthError as err:
             _LOGGER.error(err)
             raise UpdateFailed(err) from err
@@ -134,6 +139,7 @@ class OlarmCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
         _LOGGER.debug("coordinator - data for %i devices received", len(device_data))
+        _LOGGER.debug(device_data)
         _LOGGER.debug("coordinator - Translate data")
 
         ### New

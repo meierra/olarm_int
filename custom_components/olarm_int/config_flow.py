@@ -125,7 +125,7 @@ class OptionsFlowHandler(OptionsFlow):
             return self.async_create_entry(title="", data=option_data)
 
         data_schema = vol.Schema(
-            {vol.Optional(OlarmConf(**device).id, default=option_data.get( OlarmConf(**device).id ,False)): selector({"boolean" : {}}) for device in config_data["devices"].values()} |
+            {vol.Optional(device.id, default=option_data.get( device.id ,False)): selector({"boolean" : {}}) for device in config_data["devices"].values()} |
             {vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): selector({"number" : {"min" : "10", "max" : "60"}})}
         )
 

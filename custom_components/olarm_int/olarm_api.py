@@ -60,6 +60,22 @@ class OlarmAPI:
         self.connected = False
         return True
 
+    async def get_all_devices(self) -> list[OlarmDevice] | None:
+        """Get all device from api."""
+        resp = await self.session.request("GET", f"{BASE_URL}devices", headers=self.headers)
+        _LOGGER.debug(resp.status)
+        match resp.status:
+            case 200:
+                self.connected = True
+                data = await resp.json()
+                _LOGGER.debug(data)
+                return  [await self.polulate_dataclass_from_api(device_data) for device_data in data['data']]
+            case 403:
+                raise APIAuthError("Error connecting to api. Invalid username or password.")
+            case 429:
+                raise APIConnectionError("Error connecting to api. Too many requests.")
+        return None
+
     async def get_device(self, deviceId :str) -> OlarmDevice | None:
         """Get a single device from api."""
         resp = await self.session.request("GET", f"{BASE_URL}devices/{deviceId}", headers=self.headers)
