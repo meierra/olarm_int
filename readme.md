@@ -51,6 +51,24 @@ Home Assistant has states for Home, Away, Night, Vaction, Custom Bypass, these d
     - [ ] Config options to support manual device mapping between Olarm and Home Assistant status
 - [ ] MQTT support (There **is a existing** MQTT end-point for Olarm and some rumours on availability, this is out of my control (right now I get authentication issues connecting), but I have been doing some early testing/playing with what is currently available)
 
+# Architecture
+The integration maps information recieved by the API into the following hierarachy within Home Assistant
+
+```
+[1] Device - Olarm (Unique via Serial Number)
+---> [1] Entity - Device Status -> Is the Olarm Device itself online
+---> [1] Device - Alarm System (Unique via device ID returned by Olarm API)
+    ---> [1] Entity - AC Status
+    ---> [1] Entity - Battery Status
+    ---> [1..x] Entity - Alarm Control Panel (Per Area defined in Olarm)
+    ---> [1..x] Entity - Bypass control (Per Zone defined in Olarm)
+    ---> [1..x] Device - Alarm Sensor (Per Zone definded in Olarm)
+        ---> [1] Entity - [Motion, Door, Window, etc] Sensor (Per definition in Olarm)
+```
+The split out of devices, I believe follows the intent of Home Assistant, i.e. your Olarm device and Alarm device are separate devices and could theoretically be moved located in different rooms and tagged as such, so I allocate them as such in Home Assistant,
+
+The split for me is a lot clearer I believe at the level of the senors that trigger zones in a Alarm System, each sensor is located in a different area in your property and theoretically could be detached from one Alarm system and re-attached to another, architecting as above allows each sensor to be allocated to the correct area in Home Assistant by the user.
+
 # Thanks
 This is my first attempt at a integration for Home Assistant, it's been a steep learning curve but the climd was helped by:
 - Mark P - for his awesome example integrations (https://community.home-assistant.io/t/working-example-of-ha-integration/730465)

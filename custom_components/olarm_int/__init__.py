@@ -14,26 +14,22 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.components import webhook
 from homeassistant.helpers import device_registry as dr
 
 from .coordinator import OlarmCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-# TODO List the platforms that you want to support.
-# For your initial PR, limit it to 1 platform.
+# Platforms required to be set up for this integration.
+# A Alarm Control Panel is mapped to each Area defined in Olarm
 _PLATFORMS: list[Platform] = [Platform.ALARM_CONTROL_PANEL, Platform.SENSOR, Platform.BUTTON]
 
-# TODO Create ConfigEntry type alias with API object
-# TODO Rename type alias and update all entry annotations
 type OlarmConfigEntry = ConfigEntry[RuntimeData]
 
 @dataclass
 class RuntimeData:
     """Class to hold your data."""
     coordinator: DataUpdateCoordinator
-    webhook_registered: bool = False
 
 # TODO Update entry annotation
 async def async_setup_entry(hass: HomeAssistant, config_entry: OlarmConfigEntry) -> bool:
@@ -58,16 +54,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: OlarmConfigEntry)
         config_entry.add_update_listener(_async_update_listener)
     )
 
-    # Setup webhook if enab led in options
-    if config_entry.options.get(CONF_WEBHOOK_ENABLED, False):
-        await setup_webhook(hass, config_entry.options.get(CONF_WEBHOOK_ID), coordinator.async_handle_webhook)
     # Add the coordinator and update listener to config runtime data to make
     # accessible throughout your integration
-    config_entry.runtime_data = RuntimeData(coordinator,config_entry.options.get(CONF_WEBHOOK_ENABLED, False))
+    config_entry.runtime_data = RuntimeData(coordinator)
 
-    # Setup platforms (based on the list of entity types in PLATFORMS defined above)
-    # This calls the async_setup method in each of your entity type files.
-    _LOGGER.debug("Setup Olarm Device")
+    # Create device registry entries for Olarm devices & attahed alarm systems
+    # This done so that we can link sensors, buttons and alarm control panels to the Olarm device or Alarm Device
     device_registry = dr.async_get(hass)
     for olarmdevice in coordinator.get_olarm_conf_data().values():
         device_registry.async_get_or_create(
@@ -97,7 +89,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: OlarmConfigEntry)
         #     hw_version=config.hwversion,
         )
 
-    _LOGGER.debug("Setup Platforms")
+    # Call async_setup method for each platform:
+    # Platform.ALARM_CONTROL_PANEL alarm_control_panel.py -> async_setup_entry
+    # Platform.SENSOR sensor.py -> async_setup_entry
+    # Platform.BUTTON button.py -> async_setup_entry
     await hass.config_entries.async_forward_entry_setups(config_entry, _PLATFORMS)
 
     # Return true to denote a successful setup.
@@ -122,22 +117,6 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: OlarmConfigEntry
     """Unload a config entry."""
     # This is called when you remove your integration or shutdown HA.
     # If you have created any custom services, they need to be removed here too.
-    if config_entry.runtime_data.webhook_registered:
-        if await unregister_webhook(hass, config_entry.options.get(CONF_WEBHOOK_ID)) :
-            config_entry.runtime_data.webhook_registered = False
+
     # Unload platforms and return result
     return await hass.config_entries.async_unload_platforms(config_entry, _PLATFORMS)
-
-async def unregister_webhook(hass: HomeAssistant, webhook_id: str) -> None:
-        """Configure based on config entry."""
-        _LOGGER.debug("UnRegistering Webhook: %s", webhook_id)
-        webhook.async_unregister(hass, webhook_id)
-        return True
-
-async def setup_webhook(hass: HomeAssistant, webhook_id: str, async_handle_webhook: Callable) -> None:
-        """Configure based on config entry."""
-        _LOGGER.debug("Registering Webhook: %s", webhook_id)
-        webhook.async_register(
-            hass, DOMAIN, "Olarm", webhook_id, async_handle_webhook
-        )
-        return True

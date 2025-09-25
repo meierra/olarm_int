@@ -10,6 +10,7 @@ import logging
 from homeassistant.components.device_tracker import config_entry
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SCAN_INTERVAL, CONF_API_TOKEN, CONF_WEBHOOK_ID
+from homeassistant.components import webhook
 
 from homeassistant.core import DOMAIN, HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -115,6 +116,33 @@ class OlarmCoordinator(DataUpdateCoordinator):
 
         # Initialise your api here
         self.api = OlarmAPI(self.token, websession)
+
+    async def _async_setup(self):
+        """Setup of the coordinator."""
+        # Setup webhook if enabled in options
+        if self.webhook_enabled:
+            await self.setup_webhook()
+
+    async def async_shutdown(self) -> None:
+        """Unload of the coordinator."""
+        await super().async_shutdown()
+        # Unregister webhook if enabled in options
+        if self.webhook_enabled:
+            await self.unregister_webhook()
+
+    async def unregister_webhook(self) -> None:
+            """Configure based on config entry."""
+            _LOGGER.debug("UnRegistering Webhook: %s", self.webhook_id)
+            webhook.async_unregister(self.hass, self.webhook_id)
+            return True
+
+    async def setup_webhook(self) -> None:
+            """Configure based on config entry."""
+            _LOGGER.debug("Registering Webhook: %s", self.webhook_id)
+            webhook.async_register(
+                self.hass, DOMAIN, "Olarm", self.webhook_id, self.async_handle_webhook
+            )
+            return True
 
 
     async def async_update_data(self):
