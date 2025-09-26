@@ -64,7 +64,7 @@ class BypassButton(ButtonEntity, CoordinatorEntity):
         type,
         device_identifier: set[tuple[str, str]],
     ) -> None:
-        """Initialize the buttonr."""
+        """Initialize the button."""
         super().__init__(coordinator)
         self.coordinator = coordinator
         self.olarm_device_id = olarm_device_id

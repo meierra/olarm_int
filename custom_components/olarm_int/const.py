@@ -46,6 +46,44 @@ class AreaStatus(StrEnum):
     COUNTDOWN = "countdown"
 
 
+# @dataclass
+# class CoordAlarmZone:
+#     """Alarm Zone class."""
+#     id: int
+#     label: str
+#     identifier: {tuple[str, str]}
+#     via_device: tuple[str, str] | None = None
+#     timestamp: float | None = None
+
+# @dataclass
+# class CoordAlarmArea:
+#     """Alarm Area class."""
+#     id: str
+#     label: str
+#     identifier: {tuple[str, str]}
+#     via_device: tuple[str, str] | None = None
+
+# @dataclass
+# class CoordAlarmDevice:
+#     """Device Type Info class."""
+#     id: str
+#     label: str
+#     alarm_make: str
+#     identifier: {tuple[str, str]}
+#     via_device: tuple[str, str] | None = None
+#     alarm_make_detail: str | None = None
+
+
+# @dataclass
+# class CoordOlarmDevice:
+#     """Olarm Device class."""
+#     id: str
+#     label: str
+#     serial_number: str
+#     type: str
+#     identifier: {tuple[str, str]}
+#     via_device: tuple[str, str] | None = None
+
 ### API Data Classes ###
 @dataclass
 class AlarmZone:

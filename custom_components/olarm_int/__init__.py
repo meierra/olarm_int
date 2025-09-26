@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from typing import Callable
 import logging
 
-from .const import CONF_WEBHOOK_ENABLED, DOMAIN
+from .const import DOMAIN
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_WEBHOOK_ID, Platform
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
@@ -16,7 +16,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers import device_registry as dr
 
-from .coordinator import OlarmCoordinator
+from .coordinator import OlarmCoordinator, OlarmDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,12 +35,12 @@ class RuntimeData:
 async def async_setup_entry(hass: HomeAssistant, config_entry: OlarmConfigEntry) -> bool:
     """Set up Olarm Integration from a config entry."""
 
+    # Setup the coordinator to manage data updates from the Olarm API
     coordinator = OlarmCoordinator(hass, config_entry, async_get_clientsession(hass))
-    await coordinator.async_config_entry_first_refresh()
 
     # Test to see if api initialised correctly, else raise ConfigNotReady to make HA retry setup
-    # TODO: Change this to match how your api will know if connected or successful update
     _LOGGER.debug("Check Coordinator connected")
+    await coordinator.async_config_entry_first_refresh()
     if not coordinator.api.connected:
         raise ConfigEntryNotReady
 
@@ -58,36 +58,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: OlarmConfigEntry)
     # accessible throughout your integration
     config_entry.runtime_data = RuntimeData(coordinator)
 
-    # Create device registry entries for Olarm devices & attahed alarm systems
+    # Create device registry entries for Olarm devices & attached alarm systems
     # This done so that we can link sensors, buttons and alarm control panels to the Olarm device or Alarm Device
-    device_registry = dr.async_get(hass)
     for olarmdevice in coordinator.get_olarm_conf_data().values():
-        device_registry.async_get_or_create(
-            config_entry_id=config_entry.entry_id,
-        #     connections={(dr.CONNECTION_NETWORK_MAC, config.mac)},
-            identifiers={(DOMAIN, f"{coordinator.data.controller_name}-{olarmdevice.serial_number}")},
-            manufacturer="Olarm",
-        #     suggested_area="Kitchen",
-            name=olarmdevice.label,
-            model=olarmdevice.type,
-        #     model_id=config.modelid,
-            sw_version=olarmdevice.firmware_version,
-        #     hw_version=config.hwversion,
-        )
-        device_registry.async_get_or_create(
-            config_entry_id=config_entry.entry_id,
-        #     connections={(dr.CONNECTION_NETWORK_MAC, config.mac)},
-            identifiers={(DOMAIN, f"{coordinator.data.controller_name}-alarm_system-{olarmdevice.alarm_conf.id}")},
-            via_device=(DOMAIN, f"{coordinator.data.controller_name}-{olarmdevice.serial_number}"),
-            manufacturer="Unknown",
-        #     suggested_area="Kitchen",
-            name=f"{olarmdevice.alarm_conf.label} (Alarm System)",
-            model=f"{olarmdevice.alarm_conf.alarm_make} - {olarmdevice.alarm_conf.alarm_make_detail}",
-        #     model_id=config.modelid,
-            sw_version="Unknown",
-
-        #     hw_version=config.hwversion,
-        )
+        await _async_add_devices_to_registry(hass, config_entry.entry_id, coordinator.data.controller_name, olarmdevice)
 
     # Call async_setup method for each platform:
     # Platform.ALARM_CONTROL_PANEL alarm_control_panel.py -> async_setup_entry
@@ -97,6 +71,37 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: OlarmConfigEntry)
 
     # Return true to denote a successful setup.
     return True
+
+async def _async_add_devices_to_registry(hass, entry_id :str, controller_name: str, olarm_device : OlarmDevice) -> None:
+    """Add Olarm and associated devices to the device registry."""
+    device_registry = dr.async_get(hass)
+
+    device_registry.async_get_or_create(
+        config_entry_id=entry_id,
+    #     connections={(dr.CONNECTION_NETWORK_MAC, config.mac)},
+        identifiers={(DOMAIN, f"{controller_name}-{olarm_device.serial_number}")},
+        manufacturer="Olarm",
+    #     suggested_area="Kitchen",
+        name=olarm_device.label,
+        model=olarm_device.type,
+    #     model_id=config.modelid,
+        sw_version=olarm_device.firmware_version,
+    #     hw_version=config.hwversion,
+    )
+    device_registry.async_get_or_create(
+        config_entry_id=entry_id,
+    #     connections={(dr.CONNECTION_NETWORK_MAC, config.mac)},
+        identifiers={(DOMAIN, f"{controller_name}-alarm_system-{olarm_device.alarm_conf.id}")},
+        via_device=(DOMAIN, f"{controller_name}-{olarm_device.serial_number}"),
+        manufacturer="Unknown",
+    #     suggested_area="Kitchen",
+        name=f"{olarm_device.alarm_conf.label} (Alarm System)",
+        model=f"{olarm_device.alarm_conf.alarm_make} - {olarm_device.alarm_conf.alarm_make_detail}",
+    #     model_id=config.modelid,
+        sw_version="Unknown",
+
+    #     hw_version=config.hwversion,
+    )
 
 async def _async_update_listener(hass: HomeAssistant, config_entry):
     """Handle config options update."""

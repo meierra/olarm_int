@@ -17,60 +17,13 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util.aiohttp import web
 
 from .olarm_api import APIConnectionError, OlarmAPI, APIAuthError, DeviceType, APIActionError
-from .const import DEFAULT_SCAN_INTERVAL, CONF_WEBHOOK_ENABLED, OLARM_DIGEST_HEADER, OLARM_DIGEST_ALG, CONF_WEBHOOK_SECRET, ActionId, WebHookActions, WebHookStates, ZoneState, AreaState, AlarmState, OlarmConf, OlarmState, action_map
+from .const import DEFAULT_SCAN_INTERVAL, CONF_WEBHOOK_ENABLED, OLARM_DIGEST_HEADER, OLARM_DIGEST_ALG, CONF_WEBHOOK_SECRET, ActionId, WebHookActions, WebHookStates, ZoneState, AreaState, AlarmState, OlarmConf, OlarmState, action_map, OlarmDevice, AlarmDevice
 from .helpers import get_entity_configuration
 
 _LOGGER = logging.getLogger(__name__)
 
 
 ###TODO move the device lookup to options to allow devices to change without redoing config flow
-@dataclass
-class AlarmZone:
-    """Alarm Zone class."""
-    id: int
-    label: str
-    type: int
-    status: str
-    identifier: {tuple[str, str]}
-    via_device: tuple[str, str] | None = None
-    timestamp: float | None = None
-
-@dataclass
-class AlarmArea:
-    """Alarm Area class."""
-    id: str
-    label: str
-    identifier: {tuple[str, str]}
-    via_device: tuple[str, str] | None = None
-    status: str | None = None
-    trigger_zones: list[int] | None = None
-    timestamp: float | None = None
-
-@dataclass
-class AlarmDevice:
-    """Device Type Info class."""
-    id: str
-    label: str
-    alarm_make: str
-    identifier: {tuple[str, str]}
-    via_device: tuple[str, str] | None = None
-    alarm_make_detail: str | None = None
-    battery: bool | None = None
-    mains: bool | None = None
-
-
-@dataclass
-class OlarmDevice:
-    """Olarm Device class."""
-    id: str
-    label: str
-    serial_number: str
-    type: str
-    identifier: {tuple[str, str]}
-    via_device: tuple[str, str] | None = None
-    firmware_version: str | None = None
-    status: str | None = None # Offline, Online, Problem
-    timezone: str | None = None
 
 @dataclass
 class OlarmAPIData:
@@ -109,6 +62,7 @@ class OlarmCoordinator(DataUpdateCoordinator):
             name=f"{DOMAIN} ({config_entry.unique_id})",
             # Method to call on every update interval.
             update_method=self.async_update_data,
+            setup_method=self.setup_coordinator,
             # Polling interval. Will only be polled if there are subscribers.
             # Using config option here but you can just use a value.
             update_interval=timedelta(seconds=self.poll_interval),
@@ -117,11 +71,19 @@ class OlarmCoordinator(DataUpdateCoordinator):
         # Initialise your api here
         self.api = OlarmAPI(self.token, websession)
 
-    async def _async_setup(self):
-        """Setup of the coordinator."""
+    async def setup_coordinator(self):
+        """
+        Setup any additional items for the coordinator.
+        No actual error handling is required as the DataUpdateCoordinator Class wraps this call in a try/except, and will
+        log and raise any exceptions. In order to make the error clearer to the user, we catch and re-raise as Exception
+        with a better description.
+        """
         # Setup webhook if enabled in options
         if self.webhook_enabled:
-            await self.setup_webhook()
+            try:
+                await self.setup_webhook()
+            except Exception as err:
+                raise Exception("Olarm Webhook setup failed: %s", err) from err
 
     async def async_shutdown(self) -> None:
         """Unload of the coordinator."""
