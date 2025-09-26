@@ -205,7 +205,7 @@ class OlarmCoordinator(DataUpdateCoordinator):
         match self.get_zone_status_by_id(device, zone):
             case "b":
                 try:
-                    action : ActionId = action_map["ids_x64"][ActionId.ZONE_UNBYPASS]
+                    action : ActionId = action_map[self.get_alarm_make_by_id(device)][ActionId.ZONE_UNBYPASS]
                 except KeyError:
                     action = ActionId.ZONE_UNBYPASS
                 try:
@@ -218,7 +218,7 @@ class OlarmCoordinator(DataUpdateCoordinator):
                     return False
             case "a" | "c":
                 try:
-                    action : ActionId = action_map["ids_x64"][ActionId.ZONE_BYPASS]
+                    action : ActionId = action_map[self.get_alarm_make_by_id(device)][ActionId.ZONE_BYPASS]
                 except KeyError:
                     action = ActionId.ZONE_BYPASS
                 try:
@@ -236,7 +236,7 @@ class OlarmCoordinator(DataUpdateCoordinator):
         """Arm a area"""
         _LOGGER.debug("coordinator - Toggle Arm Area:%s on device %s", area, device)
         try:
-            action : ActionId = action_map["ids_x64"][ActionId.AREA_ARM]
+            action : ActionId = action_map[self.get_alarm_make_by_id(device)][ActionId.AREA_ARM]
         except KeyError:
                 action = ActionId.AREA_ARM
         try:
